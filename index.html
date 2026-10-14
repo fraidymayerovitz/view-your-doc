@@ -77,6 +77,7 @@
       padding: 12px;
     }
 
+    /* decorative overlay (keeps subtle grid/paper texture) */
     .doc-preview::before {
       content: "";
       position: absolute;
@@ -86,6 +87,70 @@
       pointer-events: none;
     }
 
+    /* --- Professional color polish + fake blurred PDFs --- */
+    :root{
+      --bg-dark:#06070a;
+      --panel:#0f1720;
+      --muted:#9fb0bf;
+      --accent-red:#e53935;
+      --accent-red-2:#ff6b6b;
+      --paper-soft:#f7f8fa;
+    }
+
+    /* fake PDFs container */
+    .fake-pdfs{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+    }
+
+    /* each fake PDF card */
+    .fake-pdf{
+      position:absolute;
+      width:180px;
+      height:240px;
+      border-radius:8px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.97), rgba(245,245,247,0.95));
+      border:1px solid rgba(0,0,0,0.06);
+      box-shadow:0 22px 60px rgba(2,6,14,0.6);
+      transform-origin:center;
+      filter:blur(6px) brightness(.78) saturate(.85);
+      opacity:.40;
+      mix-blend-mode:multiply;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      font-weight:700;
+      color:rgba(20,24,28,0.9);
+      font-family:Arial, Helvetica, sans-serif;
+    }
+
+    /* red PDF badge */
+    .fake-pdf::after{
+      content:"PDF";
+      display:block;
+      margin-bottom:12px;
+      font-size:13px;
+      background:linear-gradient(90deg, var(--accent-red), var(--accent-red-2));
+      color:white;
+      padding:6px 10px;
+      border-radius:6px;
+      letter-spacing:.06em;
+      box-shadow:0 6px 18px rgba(229,57,53,.14);
+    }
+
+    /* positions/rotations */
+    .fake-pdf.p1{ left:6%;  top:10%;  transform:rotate(-12deg) scale(.92); opacity:.46; }
+    .fake-pdf.p2{ left:18%; top:38%; transform:rotate(6deg)   scale(.86); opacity:.38; }
+    .fake-pdf.p3{ right:16%; top:12%; transform:rotate(-6deg)  scale(.88); opacity:.42; }
+    .fake-pdf.p4{ right:6%;  top:44%; transform:rotate(10deg)  scale(.80); opacity:.32; }
+    .fake-pdf.p5{ left:44%;  bottom:4%; transform:rotate(2deg) scale(.95); opacity:.34; }
+    .fake-pdf.p6{ left:62%;  top:28%; transform:rotate(-14deg) scale(.84); opacity:.28; }
+
+    .doc-preview > .preview-img { position: relative; z-index: 3; width:100%; height:100%; object-fit:cover; display:block; filter:blur(9px) brightness(.72) saturate(.85); transform:scale(1.04); transition:filter .35s ease, transform .35s ease; }
+    .doc-preview > .reveal-btn   { z-index: 6; }
+
     .preview-logo {
       width: 100%;
       height: 100%;
@@ -93,9 +158,7 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      filter: blur(9px) brightness(.72) saturate(.85);
-      transform: scale(1.04);
-      transition: filter .35s ease, transform .35s ease;
+      /* legacy: preview-logo kept for compatibility */
     }
 
     .logo-box {
@@ -316,13 +379,20 @@
       </div>
 
       <div class="doc-preview">
-        <div class="preview-logo" aria-hidden="true">
-          <div class="logo-box">
-            <div class="brand">ICON <span class="red"></span> TECH</div>
-            <div class="group">GROUP</div>
-          </div>
+        <!-- background fake PDFs (visual only) -->
+        <div class="fake-pdfs" aria-hidden="true">
+          <div class="fake-pdf p1"></div>
+          <div class="fake-pdf p2"></div>
+          <div class="fake-pdf p3"></div>
+          <div class="fake-pdf p4"></div>
+          <div class="fake-pdf p5"></div>
+          <div class="fake-pdf p6"></div>
         </div>
 
+        <!-- actual preview: use the SVG logo you uploaded -->
+        <img src="image001.svg" alt="Icon Tech Group preview" class="preview-img" />
+
+        <!-- reveal button (keeps same id used by the script) -->
         <button class="reveal-btn" id="revealBtn" type="button" aria-label="Reveal the document">
           Open document
         </button>
@@ -336,7 +406,7 @@
     <div class="modal-card" role="dialog" aria-labelledby="modalTitle">
       <div class="modal-head">
         <div class="logo-mark" aria-label="Icon Tech Group logo">
-          ICON <span class="mini-red"></span> TECH
+          <img src="image001.svg" alt="Icon Tech Group" style="height:100%; width:auto; display:block;" />
         </div>
         <div>
           <div class="modal-title" id="modalTitle">Icon Tech Group — Security Awareness</div>
@@ -365,7 +435,7 @@
       const revealBtn = document.getElementById('revealBtn');
       const closeBtn = document.getElementById('closeBtn');
       const modal = document.getElementById('modal');
-      const preview = document.querySelector('.preview-logo');
+      const previewImg = document.querySelector('.preview-img');
 
       // Placeholder tracking values — replace before production
       const TRACK_ENDPOINT = 'REPLACE_WITH_YOUR_TRACKING_ENDPOINT';
@@ -393,8 +463,10 @@
       }
 
       revealBtn.addEventListener('click', function() {
-        preview.style.filter = 'blur(0px) brightness(1) saturate(1)';
-        preview.style.transform = 'scale(1)';
+        if (previewImg) {
+          previewImg.style.filter = 'blur(0px) brightness(1) saturate(1)';
+          previewImg.style.transform = 'scale(1)';
+        }
         modal.classList.add('show');
         modal.setAttribute('aria-hidden', 'false');
         sendTracking('reveal_click');
